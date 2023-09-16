@@ -3,6 +3,9 @@ import * as child_process from 'child_process';
 import * as path from 'path';
 
 const dir = process.env.DIR;
+const mtPath = "/usr/src/app/mt"
+const minAge = 1000 * 60 * 10
+const maxAge = 1000 * 60 * 60 * 24
 
 function* getFiles(dir: string): Iterable<string> {
     const dirents = fs.readdirSync(dir, { withFileTypes: true });
@@ -16,7 +19,7 @@ function* getFiles(dir: string): Iterable<string> {
     }
 }
 
-const processVideo = (file: string) => {
+const processVideoFfmpeg = (file: string) => {
     const p = path.parse(file)
     const pngPath = `${p.dir}/${p.name}.jpg`
     if (!fs.existsSync(pngPath)) {
@@ -38,6 +41,26 @@ const processVideo = (file: string) => {
     }
 }
 
+const formatTimestamp = (hours: number, minutes: number) => {
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`
+}
+
+const processVideoMt = (file: string) => {
+    const p = path.parse(file)
+    const pngPath = `${p.dir}/${p.name}.jpg`
+    if (!fs.existsSync(pngPath)) {
+        const durationResult = child_process.execSync(`ffprobe -i ${file} -show_entries format=duration -v quiet -of csv="p=0"`).toString();
+        const duration = Number(durationResult)
+        const totalMinutes = Math.floor(duration / (60))
+        const hours = Math.floor(totalMinutes / (60))
+        const minutes = Math.floor(totalMinutes % (60))
+
+        const endTimestamp = formatTimestamp(hours, minutes);
+
+        child_process.execSync(`${mtPath} --to "${endTimestamp}" -n ${totalMinutes} --columns 5 ${file}`)
+    }
+}
+
 if (dir) {
     for (const file of getFiles(dir)) {
         if (path.extname(file) === ".mp4") {
@@ -45,8 +68,8 @@ if (dir) {
             const mtime = fileStat.mtime;
             const now = new Date();
             const diff = now.getTime() - mtime.getTime();
-            if (diff > 1000 * 60 * 10 && diff < 1000 * 60 * 60 * 24) {
-                processVideo(file);
+            if (diff > minAge && diff < maxAge) {
+                processVideoMt(file);
             }
         }
     }
