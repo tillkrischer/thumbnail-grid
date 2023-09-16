@@ -1,6 +1,6 @@
-cronschedule="* * * * *"
+cronschedule="20 * * * *"
 variableinit="DIR=${DIR}"
-command="npm start --prefix /user/src/app"
+command="npm start --prefix /usr/src/app"
 pipe=">/proc/1/fd/1 2>/proc/1/fd/2"
 cronstatement="${cronschedule} ${variableinit} ${command} ${pipe}"
 
