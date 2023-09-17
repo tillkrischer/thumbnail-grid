@@ -1,4 +1,4 @@
-cronschedule="20 * * * *"
+cronschedule="*/10 * * * *"
 variableinit="DIR=${DIR}"
 command="npm start --prefix /usr/src/app"
 pipe=">/proc/1/fd/1 2>/proc/1/fd/2"
