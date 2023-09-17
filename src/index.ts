@@ -55,9 +55,15 @@ const processVideoMt = (file: string) => {
         const hours = Math.floor(totalMinutes / (60))
         const minutes = Math.floor(totalMinutes % (60))
 
-        const endTimestamp = formatTimestamp(hours, minutes);
+        let toParam = ""
+        if (totalMinutes >= 1) {
+            toParam = `--to "${formatTimestamp(hours, minutes)}"`
+        }
+        const nParam = `-n ${Math.max(totalMinutes, 1)}`
+        const columnParam = '--columns 5'
 
-        child_process.execSync(`${mtPath} --to "${endTimestamp}" -n ${totalMinutes} --columns 5 ${file}`)
+
+        child_process.execSync(`${mtPath} ${toParam} ${nParam} ${columnParam} ${file}`)
     }
 }
 
